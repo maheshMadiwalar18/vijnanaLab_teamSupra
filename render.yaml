@@ -1,0 +1,33 @@
+services:
+  # The PostgreSQL Database
+  - type: pgo
+    name: vijnana-db
+    plan: free # Change to starter or standard for production
+    databaseName: vijnana_db
+    user: vijnana_user
+
+  # The FastAPI Backend
+  - type: web
+    name: vijnana-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free # Change to starter for production
+    branch: main
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vijnana-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: GEMINI_API_KEY
+        sync: false # You will need to manually set this in the Render dashboard
+
+    # Run Alembic migrations before starting the app
+    # In Docker environments on Render, this might need to be run as part of the Dockerfile or via a script.
+    # For now, we will handle migrations locally or via a startup script in the Dockerfile.
